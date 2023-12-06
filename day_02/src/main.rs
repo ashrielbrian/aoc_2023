@@ -12,17 +12,13 @@ fn parse_cube_line(line: &str) -> (u32, Vec<HashMap<&str, u32>>) {
     let parsed_regex = re.captures(line).unwrap();
 
     let game: u32 = parsed_regex["game"].parse().unwrap();
-    println!("{}", game);
     let start_game_index = line.find(':').unwrap();
     let cube_sets: Vec<HashMap<&str, u32>> = parse_games(&line[start_game_index + 1..]);
-
-    println!("{:?}", cube_sets);
 
     (game, cube_sets)
 }
 
 fn parse_games(line: &str) -> Vec<HashMap<&str, u32>> {
-    println!("{}", line);
     line.trim()
         .split(";")
         .filter(|segment| !segment.trim().is_empty())
