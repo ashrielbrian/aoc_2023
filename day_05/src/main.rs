@@ -1,3 +1,4 @@
+use indicatif::ProgressIterator;
 use std::{collections::HashMap, fs};
 
 fn parse_numbers(line: &str) -> Vec<usize> {
@@ -38,6 +39,7 @@ fn get_min_location(
 ) -> usize {
     seeds
         .iter()
+        .progress()
         .map(|seed| {
             let mut base = *seed;
             let mut future_base = None;
