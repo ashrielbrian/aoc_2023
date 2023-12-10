@@ -30,30 +30,20 @@ fn parse_content(content: String) -> (Vec<usize>, HashMap<String, Vec<Vec<usize>
 
     (seeds, mapper)
 }
-fn main() {
-    let map_contents =
-        fs::read_to_string("seed_maps.txt").expect("Should have been able to open seed_maps file");
 
-    let map_relationships = [
-        "seed-to-soil map:",
-        "soil-to-fertilizer map:",
-        "fertilizer-to-water map:",
-        "water-to-light map:",
-        "light-to-temperature map:",
-        "temperature-to-humidity map:",
-        "humidity-to-location map:",
-    ];
-
-    let (seeds, mapper) = parse_content(map_contents);
-
-    let min_location = seeds
+fn get_min_location(
+    seeds: &Vec<usize>,
+    mapper: &HashMap<String, Vec<Vec<usize>>>,
+    map_relationships: &[&str],
+) -> usize {
+    seeds
         .iter()
         .map(|seed| {
             let mut base = *seed;
             let mut future_base = None;
 
             for map_str in map_relationships {
-                let vecs = mapper.get(map_str).unwrap();
+                let vecs = mapper.get(*map_str).unwrap();
 
                 for vec in vecs {
                     if let [dest, source, range] = vec.as_slice() {
@@ -72,6 +62,54 @@ fn main() {
             base
         })
         .min()
-        .unwrap();
-    println!("Min location: {}", min_location);
+        .unwrap()
+}
+
+fn part_one(
+    seeds: &Vec<usize>,
+    mapper: &HashMap<String, Vec<Vec<usize>>>,
+    map_relationships: &[&str],
+) {
+    let min_location = get_min_location(seeds, mapper, map_relationships);
+    println!("Part one: {}", min_location);
+}
+
+fn part_two(
+    seeds: &Vec<usize>,
+    mapper: &HashMap<String, Vec<Vec<usize>>>,
+    map_relationships: &[&str],
+) {
+    let mut all_seeds = Vec::new();
+    for pair in seeds.chunks(2) {
+        println!("{:?}", pair);
+        if pair.len() == 2 {
+            for i in pair[0]..pair[0] + pair[1] {
+                all_seeds.push(i);
+            }
+        }
+    }
+
+    println!("total num of seeds: {}", all_seeds.len());
+
+    let min_location = get_min_location(&all_seeds, mapper, map_relationships);
+    println!("Part two: {}", min_location);
+}
+fn main() {
+    let map_contents =
+        fs::read_to_string("seed_maps.txt").expect("Should have been able to open seed_maps file");
+
+    let map_relationships = [
+        "seed-to-soil map:",
+        "soil-to-fertilizer map:",
+        "fertilizer-to-water map:",
+        "water-to-light map:",
+        "light-to-temperature map:",
+        "temperature-to-humidity map:",
+        "humidity-to-location map:",
+    ];
+
+    let (seeds, mapper) = parse_content(map_contents);
+
+    part_one(&seeds, &mapper, &map_relationships);
+    part_two(&seeds, &mapper, &map_relationships);
 }
