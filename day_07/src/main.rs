@@ -87,6 +87,8 @@ fn main() {
     let mut hands: Vec<(usize, Hand)> = Vec::new();
     let mut bids: Vec<i32> = Vec::new();
 
+    // enumerate to keep track of the original index so we can index into each hand's
+    // respective bids vector.
     for (i, line) in hands_text.lines().enumerate() {
         let parsed_values = line.split_whitespace().collect::<Vec<&str>>();
 
@@ -103,6 +105,7 @@ fn main() {
 
     let total_winnings = hands
         .iter()
+        // enumerate here to get the rank of each hand (0'th index, see next comment)
         .enumerate()
         // + 1 to the rank, because the 0th  index is rank 1
         .fold(0, |acc, val| acc + bids[val.1 .0] * (val.0 + 1) as i32);
