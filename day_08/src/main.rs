@@ -60,12 +60,7 @@ fn parse_maze(maze: String) -> (Vec<Direction>, HashMap<String, Node>) {
     (directions, nodes)
 }
 
-fn main() {
-    let nodes_content =
-        fs::read_to_string("maze.txt").expect("Should be able to read maze text file.");
-
-    let (directions, nodes) = parse_maze(nodes_content);
-
+fn part_one(directions: &Vec<Direction>, nodes: &HashMap<String, Node>) {
     let mut i: usize = 0;
     let mut num_steps = 0;
     let mut curr_node = &"AAA".to_string();
@@ -85,5 +80,80 @@ fn main() {
         num_steps += 1;
     }
 
-    println!("{}", num_steps);
+    println!("Part one: {}", num_steps);
+}
+
+fn get_steps_to_end(
+    start_node: &String,
+    directions: &Vec<Direction>,
+    nodes: &HashMap<String, Node>,
+) -> i32 {
+    let mut i: usize = 0;
+    let mut num_steps = 0;
+    let mut curr_node = start_node;
+    while !curr_node.ends_with("Z") {
+        if i >= directions.len() {
+            i = 0;
+        }
+
+        let node = nodes.get(curr_node).unwrap();
+        curr_node = match directions[i] {
+            Direction::Right => node.go_right(),
+            Direction::Left => node.go_left(),
+        };
+
+        i += 1;
+        num_steps += 1;
+    }
+
+    return num_steps;
+}
+
+fn gcd(a: u64, b: u64) -> u64 {
+    if b == 0 {
+        a
+    } else {
+        gcd(b, a % b)
+    }
+}
+
+fn lcm(a: u64, b: u64) -> u64 {
+    if a == 0 || b == 0 {
+        0
+    } else {
+        (a * b) / gcd(a, b)
+    }
+}
+
+fn lcm_of_list(numbers: Vec<i32>) -> u64 {
+    if numbers.is_empty() {
+        panic!("List is empty. LCM is undefined.")
+    }
+
+    let mut result = numbers[0] as u64;
+
+    for &num in &numbers[1..] {
+        result = lcm(result as u64, num as u64) as u64;
+    }
+
+    result
+}
+fn part_two(directions: &Vec<Direction>, nodes: &HashMap<String, Node>) {
+    let num_steps = nodes
+        .keys()
+        .filter(|key| key.ends_with("A"))
+        .map(|node| get_steps_to_end(node, &directions, &nodes))
+        .collect::<Vec<i32>>();
+
+    println!("Part two: {:?}", lcm_of_list(num_steps));
+}
+
+fn main() {
+    let nodes_content =
+        fs::read_to_string("maze.txt").expect("Should be able to read maze text file.");
+
+    let (directions, nodes) = parse_maze(nodes_content);
+
+    part_one(&directions, &nodes);
+    part_two(&directions, &nodes);
 }
