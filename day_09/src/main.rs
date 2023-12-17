@@ -1,6 +1,6 @@
 use std::fs;
 
-fn extrapolate(nums: &Vec<i64>) -> i64 {
+fn extrapolate(nums: &Vec<i64>, backward: bool) -> i64 {
     let mut differences: Vec<Vec<i64>> = Vec::new();
 
     let mut curr_diffs = nums
@@ -19,9 +19,34 @@ fn extrapolate(nums: &Vec<i64>) -> i64 {
         differences.push(curr_diffs.clone());
     }
 
-    differences.iter().fold(0, |value, difference| {
-        value + difference[difference.len() - 1]
-    }) + nums[nums.len() - 1]
+    if backward {
+        let mut value = 0;
+        for difference in differences.iter().rev() {
+            value = -value + difference[0];
+        }
+
+        nums[0] - value
+    } else {
+        differences.iter().fold(0, |value, difference| {
+            value + difference[difference.len() - 1]
+        }) + nums[nums.len() - 1]
+    }
+}
+
+fn part_one(oasis_history: &Vec<Vec<i64>>) {
+    let total = oasis_history
+        .iter()
+        .map(|history| extrapolate(history, false))
+        .fold(0, |acc, val| acc + val);
+    println!("Part one: {}", total);
+}
+
+fn part_two(oasis_history: &Vec<Vec<i64>>) {
+    let total = oasis_history
+        .iter()
+        .map(|history| extrapolate(history, true))
+        .fold(0, |acc, val| acc + val);
+    println!("Part two: {}", total);
 }
 fn main() {
     let oasis_contents =
@@ -36,9 +61,6 @@ fn main() {
         })
         .collect();
 
-    let total = oasis
-        .iter()
-        .map(|history| extrapolate(history))
-        .fold(0, |acc, val| acc + val);
-    println!("{:?}", total);
+    part_one(&oasis);
+    part_two(&oasis);
 }
