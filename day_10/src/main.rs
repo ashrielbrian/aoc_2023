@@ -81,15 +81,19 @@ fn parse_loop(s: String) -> (Vec<Vec<Tile>>, (i32, i32)) {
 }
 
 fn main() {
+    // Solution assumes there is no dead-ends and the pipes work in a single direction.
     let loop_contents =
         fs::read_to_string("loop.txt").expect("Should have been able to open file.");
     let (tiles, start) = parse_loop(loop_contents);
-    // println!("{:?}, {:?}", tiles, start);
 
     let mut curr_tile = &tiles[start.0 as usize][start.1 as usize];
     let mut curr_position = (start.0 as usize, start.1 as usize);
     let mut from: Direction = Direction::North;
 
+    // Since we don't know what kind of pipe S is, we need to first figure out what it is by
+    // looking at all neighbourhood pipes (up, down, left, right), and seeing which ones connect
+    // to the S tile.
+    // IMPORTANT: This does NOT check if the position is potentially out-of-bounds.
     for offset in OFFSETS {
         let potential_position = (
             (start.0 + offset.0) as usize,
