@@ -229,6 +229,7 @@ fn clean_tiles(
     walls: &HashSet<(usize, usize)>,
     tiles: Vec<Vec<Tile>>,
 ) -> Vec<Vec<Tile>> {
+    /* Removes all unused pipes (not part of main loop), and replaces S with its actual pipe. */
     tiles
         .into_iter()
         .enumerate()
@@ -250,45 +251,38 @@ fn clean_tiles(
         .collect()
 }
 
-fn scan_line(walls: HashSet<(usize, usize)>, tiles: &Vec<Vec<Tile>>) {
-    let (rows, cols) = (tiles.len(), tiles[0].len());
-    let mut enclosed_tiles: usize = 0;
+fn scan_line(tiles: Vec<Vec<Tile>>) {
+    let mut is_in_loop = false;
+    let mut opening_pipe = '-';
 
-    for row in 0..rows {
-        let mut is_in_loop = false;
-        let mut seen_wall_pipes = 0;
-        let mut prior_pipe = '-';
-
-        for col in 0..cols {
-            match &tiles[row][col] {
-                Tile::Pipe(pipe) => {
-                    if (pipe.pipe_type == '|')
-                        || (prior_pipe == 'F' && pipe.pipe_type == 'J')
-                        || (prior_pipe == 'L' && pipe.pipe_type == '7')
-                    {
+    let enclosed_tiles = tiles
+        .into_iter()
+        .flatten()
+        .filter(|p| match p {
+            Tile::Ground => is_in_loop,
+            Tile::Pipe(conn) => {
+                if conn.pipe_type == '|' {
+                    is_in_loop = !is_in_loop;
+                } else if conn.pipe_type == 'L' || conn.pipe_type == 'F' {
+                    // "start" pipe, so we set the opening_pipe variable
+                    opening_pipe = conn.pipe_type;
+                } else if conn.pipe_type == 'J' {
+                    if opening_pipe == 'F' {
                         is_in_loop = !is_in_loop;
+                        opening_pipe = '-';
                     }
-
-                    prior_pipe = pipe.pipe_type;
+                } else if conn.pipe_type == '7' {
+                    if opening_pipe == 'L' {
+                        is_in_loop = !is_in_loop;
+                        opening_pipe = '-';
+                    }
                 }
-                _ => {}
+                false
             }
-            is_in_loop = false;
+            _ => false,
+        })
+        .count();
 
-            // if walls.contains(&(row, col)) {
-            //     seen_wall_pipes += 1;
-            // } else {
-            //     if seen_wall_pipes % 2 != 0 {
-            //         // inside the pipe loop
-            //         enclosed_tiles += 1;
-            //     }
-            // }
-        }
-        println!(
-            "After {} rows, enclosed tiles: {}. Number of wall pipes seen: {}",
-            row, enclosed_tiles, seen_wall_pipes
-        );
-    }
     println!("Enclosed tiles: {}", enclosed_tiles);
 }
 
@@ -380,5 +374,5 @@ fn main() {
 
     let tiles = clean_tiles(start_pipe, &walls, tiles);
     visualize_walls(&walls, &tiles);
-    // scan_line(walls, &tiles);
+    scan_line(tiles);
 }
