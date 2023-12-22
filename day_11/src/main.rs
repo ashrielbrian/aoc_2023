@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::fs;
 
 fn insert_space(universe: &mut Vec<Vec<i32>>) {
@@ -46,8 +47,7 @@ fn insert_space(universe: &mut Vec<Vec<i32>>) {
 }
 
 fn main() {
-    let universe =
-        fs::read_to_string("small_input.txt").expect("Should be able to read input text.");
+    let universe = fs::read_to_string("input.txt").expect("Should be able to read input text.");
 
     let mut num_galaxies = 0;
     let mut parsed_universe: Vec<Vec<i32>> = universe
@@ -66,4 +66,25 @@ fn main() {
         .collect();
 
     insert_space(&mut parsed_universe);
+
+    let galaxies: Vec<(i32, usize, usize)> = parsed_universe
+        .iter()
+        .enumerate()
+        .map(|(i, row)| {
+            row.iter()
+                .enumerate()
+                .map(|(j, galaxy)| (*galaxy, i, j))
+                .collect::<Vec<(i32, usize, usize)>>()
+        })
+        .flatten()
+        .filter(|(galaxy, _, _)| *galaxy != 0)
+        .collect();
+
+    let sum_of_shortest_paths = galaxies
+        .iter()
+        .combinations(2)
+        .map(|pair| pair[0].1.abs_diff(pair[1].1) + pair[0].2.abs_diff(pair[1].2))
+        .fold(0, |acc, val| acc + val);
+
+    println!("{}", sum_of_shortest_paths);
 }
