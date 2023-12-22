@@ -112,7 +112,6 @@ fn shortest_path_with_space_expansion(
         .iter()
         .combinations(2)
         .map(|pair| {
-            // the intuition i figured here is that the number of space
             let mut num_empty_spaces_in_between = 0;
 
             num_empty_spaces_in_between += space_col_indices
